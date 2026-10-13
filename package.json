@@ -1,0 +1,10 @@
+{
+  "name": "whats-streaming",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fetch": "node scripts/fetch.mjs",
+    "serve": "python3 -m http.server 8000 --directory site",
+    "dev": "npm run fetch && npm run serve"
+  }
+}
