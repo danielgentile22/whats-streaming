@@ -1,9 +1,2 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5f6d"/><stop offset="1" stop-color="#c2185b"/></linearGradient></defs>
-<rect width="1024" height="1024" rx="200" fill="url(#bg)"/>
-<rect x="190" y="270" width="644" height="420" rx="56" fill="#fff"/>
-<rect x="400" y="740" width="224" height="36" rx="18" fill="#fff" opacity=".9"/>
-<path d="M455 370v200l170-100z" fill="#d81b60" stroke="#d81b60" stroke-width="24" stroke-linejoin="round"/>
-<g fill="none" stroke="#ffe08a" stroke-width="40" stroke-linecap="round" stroke-linejoin="round">
-<path d="M560 210l90-80 50 45 100-90"/><path d="M745 85h60v60"/></g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024"><defs><linearGradient id="amb" x1=".15" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="#fff4d6"/><stop offset=".46" stop-color="#ffb445"/><stop offset="1" stop-color="#e07a2e"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e33e4e"/><stop offset="1" stop-color="#af1f2d"/></linearGradient></defs>
+<rect width="1024" height="1024" rx="224" fill="url(#bg)"/><rect x="190" y="290" width="644" height="420" rx="56" fill="#fff"/><rect x="400" y="750" width="224" height="40" rx="20" fill="#fff"/><path d="M455 390v200l170-100z" fill="#e0283a" stroke="#e0283a" stroke-width="24" stroke-linejoin="round"/><g fill="none" stroke="#ffe08a" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"><path d="M560 225l90-80 50 45 100-90"/><path d="M745 100h60v60"/></g></svg>
