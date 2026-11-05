@@ -27,10 +27,27 @@
   h1 { margin: 0; font-size: 26px; letter-spacing: -0.01em; }
   .sub { color: var(--muted); margin: 4px 0 20px; }
 
+  /* The search row stays pinned at every width; the filters pin under it on
+     wider screens. --search-h is the search row's full height. */
+  /* They sit outside <header>, because a sticky element can't stick past
+     the end of its parent. */
+  :root { --search-h: 56px; }
+  .search, .filters { width: min(1168px, calc(100% - 32px)); margin-inline: auto; }
+  .search { position: sticky; top: 0; z-index: 2; background: var(--bg); padding-top: 12px; height: var(--search-h); }
+  .search input {
+    width: 100%; height: 44px; padding: 0 14px 0 40px;
+    background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%239aa1ad' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m17 17-4.5-4.5'/%3E%3C/svg%3E") no-repeat 13px center;
+    color: var(--text); border: 1px solid var(--line); border-radius: 10px;
+    font: inherit; font-size: 16px; /* below 16px, iOS zooms in on tap */
+  }
+  .search input::placeholder { color: var(--muted); }
+  .search input:focus { outline: none; border-color: var(--accent); }
+  .empty a { color: var(--accent); }
+
   .filters {
     display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center;
     padding: 12px 0 20px; border-bottom: 1px solid var(--line);
-    position: sticky; top: 0; background: var(--bg); z-index: 1;
+    position: sticky; top: var(--search-h); background: var(--bg); z-index: 1;
   }
   .group { display: flex; align-items: center; gap: 8px; }
   .group > span { color: var(--muted); font-size: 13px; }
@@ -108,36 +125,39 @@
 <header>
   <h1>What's Streaming</h1>
   <p class="sub" id="updated">Loading…</p>
-  <div class="filters">
-    <div class="group">
-      <span>Show</span>
-      <div class="seg" data-filter="availability">
-        <button aria-pressed="true" data-value="all">Everything</button>
-        <button aria-pressed="false" data-value="streaming">Streaming now</button>
-      </div>
-    </div>
-    <div class="group">
-      <span>Audience</span>
-      <div class="seg" data-filter="audience">
-        <button aria-pressed="true" data-value="all">Everyone</button>
-        <button aria-pressed="false" data-value="under18">Under 18</button>
-      </div>
-    </div>
-    <div class="group">
-      <span>Type</span>
-      <div class="seg" data-filter="type">
-        <button aria-pressed="true" data-value="all">All</button>
-        <button aria-pressed="false" data-value="movie">Movies</button>
-        <button aria-pressed="false" data-value="tv">Shows</button>
-      </div>
-    </div>
-    <label class="group">
-      <span>Service</span>
-      <select id="service"><option value="">Any</option></select>
-    </label>
-    <div class="count" id="count"></div>
-  </div>
 </header>
+<div class="search">
+  <input id="q" type="search" placeholder="Search this week's movies and shows" aria-label="Search titles" autocomplete="off" spellcheck="false" enterkeyhint="search">
+</div>
+<div class="filters">
+  <div class="group">
+    <span>Show</span>
+    <div class="seg" data-filter="availability">
+      <button aria-pressed="true" data-value="all">Everything</button>
+      <button aria-pressed="false" data-value="streaming">Streaming now</button>
+    </div>
+  </div>
+  <div class="group">
+    <span>Audience</span>
+    <div class="seg" data-filter="audience">
+      <button aria-pressed="true" data-value="all">Everyone</button>
+      <button aria-pressed="false" data-value="under18">Under 18</button>
+    </div>
+  </div>
+  <div class="group">
+    <span>Type</span>
+    <div class="seg" data-filter="type">
+      <button aria-pressed="true" data-value="all">All</button>
+      <button aria-pressed="false" data-value="movie">Movies</button>
+      <button aria-pressed="false" data-value="tv">Shows</button>
+    </div>
+  </div>
+  <label class="group">
+    <span>Service</span>
+    <select id="service"><option value="">Any</option></select>
+  </label>
+  <div class="count" id="count"></div>
+</div>
 
 <main><div class="grid" id="grid"></div></main>
 
@@ -149,8 +169,11 @@
 </footer>
 
 <script>
-  const state = { availability: "all", audience: "all", type: "all", service: "" };
+  const state = { availability: "all", audience: "all", type: "all", service: "", q: "" };
   let titles = [];
+
+  // Case- and accent-insensitive, so "pokemon" finds "Pokémon".
+  const norm = (s) => String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -193,11 +216,22 @@
       (state.availability === "all" || t.providers.stream.length) &&
       (state.audience === "all" || t.under18) &&
       (state.type === "all" || t.type === state.type) &&
-      (!state.service || t.providers.stream.some((p) => String(p.id) === state.service)));
+      (!state.service || t.providers.stream.some((p) => String(p.id) === state.service)) &&
+      (!state.q || norm(t.title).includes(state.q)));
     document.getElementById("grid").innerHTML = shown.length
       ? shown.map(card).join("")
-      : `<div class="empty">Nothing trending matches these filters.</div>`;
+      : `<div class="empty">${emptyMessage()}</div>`;
     document.getElementById("count").textContent = `${shown.length} of ${titles.length} titles`;
+  }
+
+  // The site only knows this week's trending titles, so a search that finds
+  // nothing hands off to JustWatch, which covers everything.
+  function emptyMessage() {
+    if (!state.q) return "Nothing trending matches these filters.";
+    const raw = document.getElementById("q").value.trim();
+    const filtered = state.availability !== "all" || state.audience !== "all" || state.type !== "all" || state.service;
+    return `No trending title matches “${esc(raw)}”${filtered ? " with these filters" : ""}.<br>
+      <a href="https://www.justwatch.com/us/search?q=${encodeURIComponent(raw)}" target="_blank" rel="noopener">Search JustWatch for “${esc(raw)}”</a>`;
   }
 
   function fillServices() {
@@ -222,6 +256,17 @@
       state[seg.dataset.filter] = btn.dataset.value;
       render();
     });
+  });
+
+  const q = document.getElementById("q");
+  q.addEventListener("input", () => { state.q = norm(q.value); render(); });
+  // "/" jumps to search from anywhere on the page, as on most sites.
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target.closest("input, select, textarea, [contenteditable]")) return;
+    e.preventDefault();
+    q.focus();
+    q.select();
   });
 
   fetch(`data.json?v=${Date.now()}`)

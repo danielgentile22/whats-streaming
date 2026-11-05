@@ -4,6 +4,7 @@ A small site showing this week's trending movies and shows, which US streaming s
 
 - **Trending list:** TMDB's weekly trending titles. This ranks by activity on TMDB, not by hours watched.
 - **Where to stream:** TMDB's watch provider data, sourced from JustWatch.
+- **Search:** the box at the top stays on screen as you scroll (press `/` to jump to it). It searches this week's list; when nothing matches, it links to the same search on JustWatch.
 - **Under 18:** rated G, PG or PG-13 (TV-Y through TV-14), or unrated and tagged Family or Kids.
 
 A GitHub Action rebuilds the data once a day and publishes the site to GitHub Pages. Refreshing the page shows the latest daily snapshot. There are no API calls from the browser and no running costs.
